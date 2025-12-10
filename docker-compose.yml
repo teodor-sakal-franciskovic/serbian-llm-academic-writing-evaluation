@@ -1,0 +1,287 @@
+version: "3.9"
+
+services:
+  # ------------------------------------------------------
+  # Base service (build once, reused everywhere)
+  # ------------------------------------------------------
+  base_evaluator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  # ======================================================
+  # ========== CHAPTER-LEVEL EVALUATION (mode=sections)
+  # ======================================================
+
+  # 1. BASELINE (Instructions only)
+  eval_sections_baseline:
+    extends:
+      service: base_evaluator
+    container_name: eval_sections_baseline
+    command:
+      [
+        "python", "flow.py",
+        "--pdf-folder", "papers",
+        "--out", "results/sections_baseline.csv",
+        "--expansion", "none",
+        "--mode", "sections"
+      ]
+
+  # 2. CHAIN-OF-THOUGHT
+  eval_sections_cot:
+    extends:
+      service: base_evaluator
+    container_name: eval_sections_cot
+    depends_on:
+      eval_sections_baseline:
+        condition: service_completed_successfully
+    command:
+      [
+        "python", "flow.py",
+        "--pdf-folder", "papers",
+        "--out", "results/sections_cot.csv",
+        "--expansion", "chain_of_thought_expansion",
+        "--mode", "sections"
+      ]
+
+  # 3. REACT
+  eval_sections_react:
+    extends:
+      service: base_evaluator
+    container_name: eval_sections_react
+    depends_on:
+      eval_sections_cot:
+        condition: service_completed_successfully
+    command:
+      [
+        "python", "flow.py",
+        "--pdf-folder", "papers",
+        "--out", "results/sections_react.csv",
+        "--expansion", "react_expansion",
+        "--mode", "sections"
+      ]
+
+  # 4. ZERO-SHOT
+  eval_sections_zero:
+    extends:
+      service: base_evaluator
+    container_name: eval_sections_zero
+    depends_on:
+      eval_sections_react:
+        condition: service_completed_successfully
+    command:
+      [
+        "python", "flow.py",
+        "--pdf-folder", "papers",
+        "--out", "results/sections_zero.csv",
+        "--expansion", "zero_shot_expansion",
+        "--mode", "sections"
+      ]
+
+  # 5. FEW-SHOT
+  eval_sections_few:
+    extends:
+      service: base_evaluator
+    container_name: eval_sections_few
+    depends_on:
+      eval_sections_zero:
+        condition: service_completed_successfully
+    command:
+      [
+        "python", "flow.py",
+        "--pdf-folder", "papers",
+        "--out", "results/sections_few.csv",
+        "--expansion", "few_shot_expansion",
+        "--mode", "sections"
+      ]
+
+  # 6. SELF-CONSISTENCY
+  eval_sections_sc:
+    extends:
+      service: base_evaluator
+    container_name: eval_sections_sc
+    depends_on:
+      eval_sections_few:
+        condition: service_completed_successfully
+    command:
+      [
+        "python", "flow.py",
+        "--pdf-folder", "papers",
+        "--out", "results/sections_sc.csv",
+        "--expansion", "self_consistency_expansion",
+        "--mode", "sections"
+      ]
+
+  # 7. SELF-CRITIQUE
+  eval_sections_critique:
+    extends:
+      service: base_evaluator
+    container_name: eval_sections_critique
+    depends_on:
+      eval_sections_sc:
+        condition: service_completed_successfully
+    command:
+      [
+        "python", "flow.py",
+        "--pdf-folder", "papers",
+        "--out", "results/sections_critique.csv",
+        "--expansion", "self_critique_expansion",
+        "--mode", "sections"
+      ]
+
+  # 8. DECOMPOSED
+  eval_sections_decomposed:
+    extends:
+      service: base_evaluator
+    container_name: eval_sections_decomposed
+    depends_on:
+      eval_sections_critique:
+        condition: service_completed_successfully
+    command:
+      [
+        "python", "flow.py",
+        "--pdf-folder", "papers",
+        "--out", "results/sections_decomposed.csv",
+        "--expansion", "decomposed_expansion",
+        "--mode", "sections"
+      ]
+
+  # 9. DELIBERATIVE
+  eval_sections_deliberative:
+    extends:
+      service: base_evaluator
+    container_name: eval_sections_deliberative
+    depends_on:
+      eval_sections_decomposed:
+        condition: service_completed_successfully
+    command:
+      [
+        "python", "flow.py",
+        "--pdf-folder", "papers",
+        "--out", "results/sections_deliberative.csv",
+        "--expansion", "deliberative_expansion",
+        "--mode", "sections"
+      ]
+
+  # 10. ACTIVE
+  eval_sections_active:
+    extends:
+      service: base_evaluator
+    container_name: eval_sections_active
+    depends_on:
+      eval_sections_deliberative:
+        condition: service_completed_successfully
+    command:
+      [
+        "python", "flow.py",
+        "--pdf-folder", "papers",
+        "--out", "results/sections_active.csv",
+        "--expansion", "active_expansion",
+        "--mode", "sections"
+      ]
+
+  # ======================================================
+  # ========== FULL-TEXT EVALUATION (mode=full)
+  # ======================================================
+
+  eval_full_baseline:
+    extends:
+      service: base_evaluator
+    container_name: eval_full_baseline
+    command:
+      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_baseline.csv", "--expansion", "none"]
+
+  eval_full_cot:
+    extends:
+      service: base_evaluator
+    container_name: eval_full_cot
+    depends_on:
+      eval_full_baseline:
+        condition: service_completed_successfully
+    command:
+      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_cot.csv", "--expansion", "chain_of_thought_expansion"]
+
+  eval_full_react:
+    extends:
+      service: base_evaluator
+    container_name: eval_full_react
+    depends_on:
+      eval_full_cot:
+        condition: service_completed_successfully
+    command:
+      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_react.csv", "--expansion", "react_expansion"]
+
+  eval_full_zero:
+    extends:
+      service: base_evaluator
+    container_name: eval_full_zero
+    depends_on:
+      eval_full_react:
+        condition: service_completed_successfully
+    command:
+      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_zero.csv", "--expansion", "zero_shot_expansion"]
+
+  eval_full_few:
+    extends:
+      service: base_evaluator
+    container_name: eval_full_few
+    depends_on:
+      eval_full_zero:
+        condition: service_completed_successfully
+    command:
+      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_few.csv", "--expansion", "few_shot_expansion"]
+
+  eval_full_sc:
+    extends:
+      service: base_evaluator
+    container_name: eval_full_sc
+    depends_on:
+      eval_full_few:
+        condition: service_completed_successfully
+    command:
+      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_sc.csv", "--expansion", "self_consistency_expansion"]
+
+  eval_full_critique:
+    extends:
+      service: base_evaluator
+    container_name: eval_full_critique
+    depends_on:
+      eval_full_sc:
+        condition: service_completed_successfully
+    command:
+      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_critique.csv", "--expansion", "self_critique_expansion"]
+
+  eval_full_decomposed:
+    extends:
+      service: base_evaluator
+    container_name: eval_full_decomposed
+    depends_on:
+      eval_full_critique:
+        condition: service_completed_successfully
+    command:
+      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_decomposed.csv", "--expansion", "decomposed_expansion"]
+
+  eval_full_deliberative:
+    extends:
+      service: base_evaluator
+    container_name: eval_full_deliberative
+    depends_on:
+      eval_full_decomposed:
+        condition: service_completed_successfully
+    command:
+      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_deliberative.csv", "--expansion", "deliberative_expansion"]
+
+  eval_full_active:
+    extends:
+      service: base_evaluator
+    container_name: eval_full_active
+    depends_on:
+      eval_full_deliberative:
+        condition: service_completed_successfully
+    command:
+      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_active.csv", "--expansion", "active_expansion"]
