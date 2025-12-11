@@ -188,7 +188,7 @@ RULES = {
             "instruction": "Svaka rečenica mora sadržati jednu i samo jednu poentu.",
             "few-shot": "Ocena 2: 'Prvo je sprovedena analiza ulaznih podataka. Zatim su podaci normalizovani.' | Ocena 1: 'Analiza je potvrdila da su podaci nekonzistentni, što je rezultiralo potrebom za dodatnom normalizacijom.' (Dve blisko povezane poente) | Ocena 0: 'Modeli su obučeni, testirani su, pri čemu je uočena niska preciznost, a to je verovatno zbog lošeg izbora hiperparametara.' (Previše poenti/klauza)",
         },
-        "Jasloća rečenica": {
+        "Jasnoća rečenica": {
             "instruction": "Svaka rečenica treba biti nedvosmislena, lako razumljiva i logično strukturirana, bez suvišne složenosti ili nepreciznih formulacija.",
             "few-shot": "Ocena 2: 'Metoda bazirana na grafovima omogućava efikasno procesiranje složenih relacija.' | Ocena 1: 'Uvođenje novog, naprednog, prilagodljivog mehanizma poboljšava efikasnost.' (Previše nepreciznih prideva) | Ocena 0: 'S obzirom na to da je bilo potrebno da se, u kontekstu rezultata, proveri validnost, sprovedena je kompleksna provera.' (Zapetljana i nejasna struktura)",
         },

@@ -2,3 +2,4 @@ pandas==2.3.3
 pymupdf4llm==0.0.24
 openai==2.8.1
 python-dotenv==1.2.1
+scikit-learn==1.8.0

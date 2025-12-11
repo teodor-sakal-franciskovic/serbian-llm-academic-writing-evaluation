@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  gpt_vs_human_compare:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gpt_vs_human_compare
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    command:
+      [
+        "python",
+        "compare_results.py"
+      ]
