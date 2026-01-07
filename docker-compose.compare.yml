@@ -14,5 +14,5 @@ services:
     command:
       [
         "python",
-        "compare_results.py"
+        "${SCRIPT_TO_RUN}"
       ]

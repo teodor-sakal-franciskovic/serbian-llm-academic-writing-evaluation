@@ -25,7 +25,6 @@ print("====================================================\n")
 # Helper: evaluate ONE GPT output file
 # ============================================================
 def evaluate_one_gpt_file(gpt_path: str):
-
     print("\n-------------------------------------------------------")
     print(f"🔍 ANALYZING GPT FILE: {gpt_path}")
     print("-------------------------------------------------------")
@@ -77,8 +76,7 @@ def evaluate_one_gpt_file(gpt_path: str):
             print(f"   ❌ ERROR computing kappa for {d}: {e}")
             print(f"      h values: {list(h)}")
             print(f"      g values: {list(g)}")
-    # =============================================================
-
+        # =============================================================
 
         exact_list.append((h == g).mean() * 100)
         adjacent_list.append((np.abs(h - g) <= 1).mean() * 100)
@@ -107,7 +105,7 @@ def evaluate_one_gpt_file(gpt_path: str):
         "mae_dim_mean": np.mean(mae_dim_list),
         "rho_total": rho,
         "mae_total": mae_total,
-        "n_dimensions_evaluated": len(kappa_list)
+        "n_dimensions_evaluated": len(kappa_list),
     }
 
 
@@ -123,7 +121,7 @@ for gpt_path in glob.glob("results/*.csv"):
 
 summary_df = pd.DataFrame(results)
 
-summary_df.to_csv("gpt_vs_human_summary.csv", index=False)
+summary_df.to_csv("gpt_vs_human_summary_v2.csv", index=False)
 
 print("\n===========================================================")
 print("🎉 Done! Summary saved to: gpt_vs_human_summary.csv")
