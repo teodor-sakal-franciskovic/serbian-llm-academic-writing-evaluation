@@ -44,8 +44,16 @@ Usage examples:
 from __future__ import annotations
 
 import argparse
+
+from anthropic import AnthropicFoundry
+
+# from google import genai
+# from google.genai import types
+# from google.oauth2 import service_account
 import json
 import logging
+
+# from openai import OpenAI
 import os
 import re
 import time
@@ -53,9 +61,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
-from dotenv import load_dotenv
-from openai import AzureOpenAI
 import pymupdf4llm
+
+from dotenv import load_dotenv
+# from openai import AzureOpenAI
 
 # -------------------------------
 # Logging
@@ -70,7 +79,9 @@ logger = logging.getLogger(__name__)
 # -------------------------------
 # Load environment and client
 # -------------------------------
+
 load_dotenv()
+""" GPT-4o
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     logger.warning("OPENAI_API_KEY not set. API calls will fail if attempted.")
@@ -80,6 +91,40 @@ client = AzureOpenAI(
     azure_endpoint="https://galton.openai.azure.com/",
     api_key=OPENAI_API_KEY,
 )
+"""
+
+"""
+GOOGLE_PROJECT_ID = os.getenv("GOOGLE_PROJECT_ID")
+GOOGLE_LOCATION = os.getenv("GOOGLE_LOCATION", "global")
+GOOGLE_CREDS_PATH = os.getenv("GOOGLE_CREDS_PATH", "google_creds.json")
+
+credentials = service_account.Credentials.from_service_account_file(
+    GOOGLE_CREDS_PATH,
+    scopes=["https://www.googleapis.com/auth/cloud-platform"],
+)
+
+client = genai.Client(
+    vertexai=True,
+    project=GOOGLE_PROJECT_ID,
+    location=GOOGLE_LOCATION,
+    credentials=credentials,
+)
+"""
+
+endpoint = "https://claude-east-us-2-resource.openai.azure.com/anthropic"
+deployment_name = "claude-sonnet-4-5"
+CLAUDE_API_KEY = os.getenv("OPENAI_API_KEY")
+
+client = AnthropicFoundry(api_key=CLAUDE_API_KEY, base_url=endpoint)
+
+
+"""GPT 5.2
+endpoint = "https://gpt-east-us-2-resource.openai.azure.com/openai/v1/"
+deployment_name = "gpt-5.2-chat"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+client = OpenAI(base_url=endpoint, api_key=OPENAI_API_KEY)
+"""
 
 # -------------------------------
 # Templates and expansions
@@ -677,6 +722,7 @@ def call_model(
     while True:
         attempt += 1
         try:
+            """GPT-4o
             response = client.chat.completions.create(
                 model="gpt-4o",
                 temperature=0,
@@ -689,8 +735,66 @@ def call_model(
 
             # response.choices[0].message.content is what your earlier code used
             text = response.choices[0].message.content
-            return text
+            """
 
+            """ GEMINI
+            full_prompt = f"""
+            {system_prompt}
+
+            {user_prompt}
+            """.strip()
+            response = client.models.generate_content(
+                model="gemini-3-flash-preview",
+                contents=full_prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0,
+                    response_mime_type="application/json",
+                ),
+            )
+
+            # Gemini vraća listu kandidata; tekst je u .text
+            text = response.text
+"""
+
+            message = client.messages.create(
+                model=os.getenv("CLAUDE_DEPLOYMENT", "claude-sonnet-4-5"),
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                max_tokens=4096,
+                temperature=0,
+            )
+
+            if isinstance(message.content, list) and len(message.content) > 0:
+                block = message.content[0]
+                # block može biti dict ili objekat sa .text
+                text = (
+                    block.get("text")
+                    if isinstance(block, dict)
+                    else getattr(block, "text", "")
+                )
+            else:
+                text = ""
+
+            if not text:
+                raise ValueError("Empty response from Claude")
+
+            """GPT 5.2
+            completion = client.chat.completions.create(
+                model=deployment_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                temperature=0,
+            )
+
+            text = completion.choices[0].message.content
+            if not text:
+                raise ValueError("Empty response from GPT")
+            """
+            return text
         except Exception as e:
             logger.exception("Model call failed on attempt %d: %s", attempt, e)
             if attempt >= max_retries:
@@ -834,6 +938,7 @@ def process_all_pdfs(
             logger.info(
                 "Completed %s — collected %d fields", pdf_path.name, len(row) - 1
             )
+            print(row)
 
             # polite pause to avoid rate limits
             time.sleep(1.0)

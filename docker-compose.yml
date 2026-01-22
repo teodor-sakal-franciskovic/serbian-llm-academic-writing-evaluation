@@ -59,9 +59,9 @@ services:
         condition: service_completed_successfully
     command:
       [
-        "python", "flow.py",
+        "python", "scripts/flow.py",
         "--pdf-folder", "papers",
-        "--out", "results/sections_react.csv",
+        "--out", "llm_results/sections_react.csv",
         "--expansion", "react_expansion",
         "--mode", "sections"
       ]
@@ -76,9 +76,9 @@ services:
         condition: service_completed_successfully
     command:
       [
-        "python", "flow.py",
+        "python", "scripts/flow.py",
         "--pdf-folder", "papers",
-        "--out", "results/sections_zero.csv",
+        "--out", "llm_results/sections_zero.csv",
         "--expansion", "zero_shot_expansion",
         "--mode", "sections"
       ]
@@ -93,9 +93,9 @@ services:
         condition: service_completed_successfully
     command:
       [
-        "python", "flow.py",
+        "python", "scripts/flow.py",
         "--pdf-folder", "papers",
-        "--out", "results/sections_few.csv",
+        "--out", "llm_results/sections_few.csv",
         "--expansion", "few_shot_expansion",
         "--mode", "sections"
       ]
@@ -110,9 +110,9 @@ services:
         condition: service_completed_successfully
     command:
       [
-        "python", "flow.py",
+        "python", "scripts/flow.py",
         "--pdf-folder", "papers",
-        "--out", "results/sections_sc.csv",
+        "--out", "llm_results/sections_sc.csv",
         "--expansion", "self_consistency_expansion",
         "--mode", "sections"
       ]
@@ -127,9 +127,9 @@ services:
         condition: service_completed_successfully
     command:
       [
-        "python", "flow.py",
+        "python", "scripts/flow.py",
         "--pdf-folder", "papers",
-        "--out", "results/sections_critique.csv",
+        "--out", "llm_results/sections_critique.csv",
         "--expansion", "self_critique_expansion",
         "--mode", "sections"
       ]
@@ -144,9 +144,9 @@ services:
         condition: service_completed_successfully
     command:
       [
-        "python", "flow.py",
+        "python", "scripts/flow.py",
         "--pdf-folder", "papers",
-        "--out", "results/sections_decomposed.csv",
+        "--out", "llm_results/sections_decomposed.csv",
         "--expansion", "decomposed_expansion",
         "--mode", "sections"
       ]
@@ -161,9 +161,9 @@ services:
         condition: service_completed_successfully
     command:
       [
-        "python", "flow.py",
+        "python", "scripts/flow.py",
         "--pdf-folder", "papers",
-        "--out", "results/sections_deliberative.csv",
+        "--out", "llm_results/sections_deliberative.csv",
         "--expansion", "deliberative_expansion",
         "--mode", "sections"
       ]
@@ -178,9 +178,9 @@ services:
         condition: service_completed_successfully
     command:
       [
-        "python", "flow.py",
+        "python", "scripts/flow.py",
         "--pdf-folder", "papers",
-        "--out", "results/sections_active.csv",
+        "--out", "llm_results/sections_active.csv",
         "--expansion", "active_expansion",
         "--mode", "sections"
       ]
@@ -193,8 +193,11 @@ services:
     extends:
       service: base_evaluator
     container_name: eval_full_baseline
+    depends_on:
+      eval_sections_active:
+        condition: service_completed_successfully
     command:
-      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_baseline.csv", "--expansion", "none"]
+      ["python", "scripts/flow.py", "--pdf-folder", "papers", "--out", "llm_results/full_baseline.csv", "--expansion", "none"]
 
   eval_full_cot:
     extends:
@@ -204,7 +207,7 @@ services:
       eval_full_baseline:
         condition: service_completed_successfully
     command:
-      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_cot.csv", "--expansion", "chain_of_thought_expansion"]
+      ["python", "scripts/flow.py", "--pdf-folder", "papers", "--out", "llm_results/full_cot.csv", "--expansion", "chain_of_thought_expansion"]
 
   eval_full_react:
     extends:
@@ -214,7 +217,7 @@ services:
       eval_full_cot:
         condition: service_completed_successfully
     command:
-      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_react.csv", "--expansion", "react_expansion"]
+      ["python", "scripts/flow.py", "--pdf-folder", "papers", "--out", "llm_results/full_react.csv", "--expansion", "react_expansion"]
 
   eval_full_zero:
     extends:
@@ -224,7 +227,7 @@ services:
       eval_full_react:
         condition: service_completed_successfully
     command:
-      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_zero.csv", "--expansion", "zero_shot_expansion"]
+      ["python", "scripts/flow.py", "--pdf-folder", "papers", "--out", "llm_results/full_zero.csv", "--expansion", "zero_shot_expansion"]
 
   eval_full_few:
     extends:
@@ -234,7 +237,7 @@ services:
       eval_full_zero:
         condition: service_completed_successfully
     command:
-      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_few.csv", "--expansion", "few_shot_expansion"]
+      ["python", "scripts/flow.py", "--pdf-folder", "papers", "--out", "llm_results/full_few.csv", "--expansion", "few_shot_expansion"]
 
   eval_full_sc:
     extends:
@@ -244,7 +247,7 @@ services:
       eval_full_few:
         condition: service_completed_successfully
     command:
-      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_sc.csv", "--expansion", "self_consistency_expansion"]
+      ["python", "scripts/flow.py", "--pdf-folder", "papers", "--out", "llm_results/full_sc.csv", "--expansion", "self_consistency_expansion"]
 
   eval_full_critique:
     extends:
@@ -254,7 +257,7 @@ services:
       eval_full_sc:
         condition: service_completed_successfully
     command:
-      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_critique.csv", "--expansion", "self_critique_expansion"]
+      ["python", "scripts/flow.py", "--pdf-folder", "papers", "--out", "llm_results/full_critique.csv", "--expansion", "self_critique_expansion"]
 
   eval_full_decomposed:
     extends:
@@ -264,7 +267,7 @@ services:
       eval_full_critique:
         condition: service_completed_successfully
     command:
-      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_decomposed.csv", "--expansion", "decomposed_expansion"]
+      ["python", "scripts/flow.py", "--pdf-folder", "papers", "--out", "llm_results/full_decomposed.csv", "--expansion", "decomposed_expansion"]
 
   eval_full_deliberative:
     extends:
@@ -274,7 +277,7 @@ services:
       eval_full_decomposed:
         condition: service_completed_successfully
     command:
-      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_deliberative.csv", "--expansion", "deliberative_expansion"]
+      ["python", "scripts/flow.py", "--pdf-folder", "papers", "--out", "llm_results/full_deliberative.csv", "--expansion", "deliberative_expansion"]
 
   eval_full_active:
     extends:
@@ -284,4 +287,4 @@ services:
       eval_full_deliberative:
         condition: service_completed_successfully
     command:
-      ["python", "flow.py", "--pdf-folder", "papers", "--out", "results/full_active.csv", "--expansion", "active_expansion"]
+      ["python", "scripts/flow.py", "--pdf-folder", "papers", "--out", "llm_results/full_active.csv", "--expansion", "active_expansion"]
