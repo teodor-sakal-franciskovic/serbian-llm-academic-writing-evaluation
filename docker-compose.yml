@@ -25,9 +25,9 @@ services:
     container_name: eval_sections_baseline
     command:
       [
-        "python", "flow.py",
+        "python", "scripts/flow.py",
         "--pdf-folder", "papers",
-        "--out", "results/sections_baseline.csv",
+        "--out", "llm_results/sections_baseline.csv",
         "--expansion", "none",
         "--mode", "sections"
       ]
@@ -42,9 +42,9 @@ services:
         condition: service_completed_successfully
     command:
       [
-        "python", "flow.py",
+        "python", "scripts/flow.py",
         "--pdf-folder", "papers",
-        "--out", "results/sections_cot.csv",
+        "--out", "llm_results/sections_cot.csv",
         "--expansion", "chain_of_thought_expansion",
         "--mode", "sections"
       ]

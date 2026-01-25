@@ -45,7 +45,6 @@ from __future__ import annotations
 
 import argparse
 
-from anthropic import AnthropicFoundry
 
 # from google import genai
 # from google.genai import types
@@ -59,6 +58,7 @@ import re
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from openai import OpenAI
 
 import pandas as pd
 import pymupdf4llm
@@ -111,20 +111,19 @@ client = genai.Client(
 )
 """
 
+"""
 endpoint = "https://claude-east-us-2-resource.openai.azure.com/anthropic"
 deployment_name = "claude-sonnet-4-5"
-CLAUDE_API_KEY = os.getenv("OPENAI_API_KEY")
+CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
 
 client = AnthropicFoundry(api_key=CLAUDE_API_KEY, base_url=endpoint)
+"""
 
-
-"""GPT 5.2
 endpoint = "https://gpt-east-us-2-resource.openai.azure.com/openai/v1/"
 deployment_name = "gpt-5.2-chat"
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+GPT_5_API_KEY = os.getenv("GPT_5_API_KEY")
 
-client = OpenAI(base_url=endpoint, api_key=OPENAI_API_KEY)
-"""
+client = OpenAI(base_url=endpoint, api_key=GPT_5_API_KEY)
 
 # -------------------------------
 # Templates and expansions
@@ -722,6 +721,28 @@ def call_model(
     while True:
         attempt += 1
         try:
+            completion = client.chat.completions.create(
+                model=deployment_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                temperature=1,
+            )
+
+            text = completion.choices[0].message.content
+            if not text:
+                raise ValueError("Empty response from GPT")
+
+            return text
+
+        except Exception as e:
+            logger.exception("Model call failed on attempt %d: %s", attempt, e)
+            if attempt >= max_retries:
+                raise
+            sleep_time = backoff * (2 ** (attempt - 1))
+            logger.info("Retrying in %0.1f seconds...", sleep_time)
+            time.sleep(sleep_time)
             """GPT-4o
             response = client.chat.completions.create(
                 model="gpt-4o",
@@ -754,12 +775,11 @@ def call_model(
 
             # Gemini vraća listu kandidata; tekst je u .text
             text = response.text
-"""
 
             message = client.messages.create(
                 model=os.getenv("CLAUDE_DEPLOYMENT", "claude-sonnet-4-5"),
+                system=system_prompt,
                 messages=[
-                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
                 max_tokens=4096,
@@ -779,29 +799,7 @@ def call_model(
 
             if not text:
                 raise ValueError("Empty response from Claude")
-
-            """GPT 5.2
-            completion = client.chat.completions.create(
-                model=deployment_name,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=0,
-            )
-
-            text = completion.choices[0].message.content
-            if not text:
-                raise ValueError("Empty response from GPT")
-            """
-            return text
-        except Exception as e:
-            logger.exception("Model call failed on attempt %d: %s", attempt, e)
-            if attempt >= max_retries:
-                raise
-            sleep_time = backoff * (2 ** (attempt - 1))
-            logger.info("Retrying in %0.1f seconds...", sleep_time)
-            time.sleep(sleep_time)
+"""
 
 
 # -------------------------------

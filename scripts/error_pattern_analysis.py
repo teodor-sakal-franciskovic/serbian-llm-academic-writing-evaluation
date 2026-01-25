@@ -7,11 +7,11 @@ import os
 # CONFIG
 # ============================================================
 HUMAN_FILE = "main_grader_final.csv"
-GPT_FOLDER = "results"  # folder with GPT CSVs
+GPT_FOLDER = "llm_results"
 ID_COL = "paper_name"
 
-OUTPUT_SUMMARY = "rq4_error_summary.csv"
-OUTPUT_DETAILED = "rq4_error_detailed.csv"
+OUTPUT_SUMMARY = "llm_error_summary.csv"
+OUTPUT_DETAILED = "llm_error_detailed.csv"
 
 # ============================================================
 # Load human data
@@ -25,19 +25,19 @@ print(f"Loaded human labels: {len(human)} papers, {len(dims)} rubric dimensions"
 
 
 # ============================================================
-# Helper: analyze one GPT file
+# Helper: analyze one LLM-evaluated file
 # ============================================================
-def analyze_gpt_file(gpt_path):
+def analyze_llm_file(gpt_path):
     gpt = pd.read_csv(gpt_path)
     gpt = gpt.loc[:, ~gpt.columns.str.contains("^Unnamed")]
 
-    df = human.merge(gpt, on=ID_COL, suffixes=("_human", "_gpt"))
+    df = human.merge(gpt, on=ID_COL, suffixes=("_human", "_llm"))
 
     deltas = []
 
     for d in dims:
         h = df[f"{d}_human"]
-        g = df[f"{d}_gpt"]
+        g = df[f"{d}_llm"]
 
         mask = ~(h.isna() | g.isna())
         deltas.extend((g[mask] - h[mask]).tolist())
@@ -74,14 +74,14 @@ def analyze_gpt_file(gpt_path):
 
 
 # ============================================================
-# Run analysis for all GPT files
+# Run analysis for all LLM-evaluated files
 # ============================================================
 all_summaries = []
 all_detailed = []
 
 for gpt_path in glob.glob(f"{GPT_FOLDER}/*.csv"):
     print(f"Analyzing {gpt_path} ...")
-    summary, detailed = analyze_gpt_file(gpt_path)
+    summary, detailed = analyze_llm_file(gpt_path)
     all_summaries.append(summary)
     all_detailed.append(detailed)
 

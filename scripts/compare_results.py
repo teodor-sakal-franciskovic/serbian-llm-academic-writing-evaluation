@@ -22,18 +22,18 @@ print("====================================================\n")
 
 
 # ============================================================
-# Helper: evaluate ONE GPT output file
+# Helper: evaluate ONE LLM-evaluated output file
 # ============================================================
-def evaluate_one_gpt_file(gpt_path: str):
+def evaluate_one_llm_file(gpt_path: str):
     print("\n-------------------------------------------------------")
-    print(f"🔍 ANALYZING GPT FILE: {gpt_path}")
+    print(f"🔍 ANALYZING LLM-evaluated FILE: {gpt_path}")
     print("-------------------------------------------------------")
 
     gpt = pd.read_csv(gpt_path)
     gpt = gpt.loc[:, ~gpt.columns.str.contains("^Unnamed")]
 
     # ---------------- Proceed only if ID column exists ----------------
-    df = human.merge(gpt, on="paper_name", suffixes=("_human", "_gpt"))
+    df = human.merge(gpt, on="paper_name", suffixes=("_human", "_llm"))
 
     kappa_list = []
     exact_list = []
@@ -45,7 +45,7 @@ def evaluate_one_gpt_file(gpt_path: str):
     # ========================================================
     for d in dims:
         col_h = f"{d}_human"
-        col_g = f"{d}_gpt"
+        col_g = f"{d}_llm"
 
         if col_h not in df.columns or col_g not in df.columns:
             continue
@@ -86,10 +86,10 @@ def evaluate_one_gpt_file(gpt_path: str):
     # Overall totals
     # ========================================================
     df["total_human"] = df[[f"{d}_human" for d in dims]].sum(axis=1)
-    df["total_gpt"] = df[[f"{d}_gpt" for d in dims]].sum(axis=1)
+    df["total_llm"] = df[[f"{d}_llm" for d in dims]].sum(axis=1)
 
-    rho, _ = spearmanr(df["total_human"], df["total_gpt"])
-    mae_total = mean_absolute_error(df["total_human"], df["total_gpt"])
+    rho, _ = spearmanr(df["total_human"], df["total_llm"])
+    mae_total = mean_absolute_error(df["total_human"], df["total_llm"])
 
     print("\n👉 Dimensions evaluated:", len(kappa_list))
     print(f"Kappa list: {kappa_list}")
@@ -113,18 +113,18 @@ def evaluate_one_gpt_file(gpt_path: str):
 # Process ALL GPT CSVs in results/ folder
 # ============================================================
 results = []
-print("\n============== PROCESSING GPT FILES ==============\n")
+print("\n============== PROCESSING LLM FILES ==============\n")
 
-for gpt_path in glob.glob("results/*.csv"):
-    metrics = evaluate_one_gpt_file(gpt_path)
+for gpt_path in glob.glob("llm_results/*.csv"):
+    metrics = evaluate_one_llm_file(gpt_path)
     results.append(metrics)
 
 summary_df = pd.DataFrame(results)
 
-summary_df.to_csv("gpt_vs_human_summary_v2.csv", index=False)
+summary_df.to_csv("llm_vs_human_summary.csv", index=False)
 
 print("\n===========================================================")
-print("🎉 Done! Summary saved to: gpt_vs_human_summary.csv")
+print("🎉 Done! Summary saved to: llm_vs_human_summary.csv")
 print("===========================================================\n")
 
 print(summary_df)
