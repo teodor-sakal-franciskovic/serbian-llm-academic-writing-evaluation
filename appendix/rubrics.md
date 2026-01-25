@@ -1,6 +1,6 @@
 # 📘 Academic Writing Evaluation Rules
 
-This document describes the evaluation rules used for assessing academic writing quality.
+This document describes the evaluation rules used for assessing academic writing quality. It also lists all of the references used when constructing the evaluation rules.
 Each rule defines a clear instruction that must be satisfied in order to achieve a high score.
 All of the definitions were originally written in Serbian language (and used like that in LLM prompts).
 
@@ -91,3 +91,16 @@ The rules are divided into:
 | Results Structure | Results must be logically ordered and interpreted. |
 | Results Discussion | Strengths, limitations, and comparisons must be discussed. |
 | Final Paragraph | Results must be summarized and future work outlined. |
+
+## 📚 References
+
+The evaluation rules in this document are grounded in established literature on academic writing, research methodology, and language standards.
+
+- **Rudestam, K. E., & Newton, R. R. (2007).** *The Method Chapter: Describing Your Research Plan.* In: *Surviving Your Dissertation*, pp. 87–117.
+- **Pešikan, M., Jerković, J., & Pižurica, M. (2013).** *Pravopis srpskoga jezika.* Matica srpska, Novi Sad.
+- **Hyland, K. (2015).** *Academic Writing and Publishing: A Practical Guide.* Routledge.
+- **Savva, M. (2016).** *Writing for Scholars: A Practical Guide to Making Sense and Being Heard.* UCL Press.
+- **Candlin, C. N., Crompton, P., & Hatim, B. (2016).** *Academic Writing Step by Step: A Research-Based Approach.* University of Toronto Press.
+- **Reyes, V. (2017).** *Demystifying the Journal Article.* Inside Higher Education.
+- **Silvia, P. J. (2018).** *How to Write a Lot: A Practical Guide to Productive Academic Writing.* American Psychological Association.
+- **Rahman, M. M. (2022).** *The Essentials of Paragraph Writing to Develop Writing Skill.* *Global Journal of Human-Social Science*, 22(5), 71–75.
