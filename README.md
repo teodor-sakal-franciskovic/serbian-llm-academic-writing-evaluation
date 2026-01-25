@@ -15,3 +15,4 @@ This repository is organized as follows:
   Contains prompts and rubrics used in the experiments, translated from Serbian to English. Also, contains an anonymised paper example written in Serbian language.
 
 This structure is designed to support transparency, reproducibility, and ease of navigation for the research workflow.
+[![DOI](https://zenodo.org/badge/1093690000.svg)](https://doi.org/10.5281/zenodo.18366788)
