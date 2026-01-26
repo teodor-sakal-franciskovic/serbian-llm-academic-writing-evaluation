@@ -81,49 +81,66 @@ logger = logging.getLogger(__name__)
 # -------------------------------
 
 load_dotenv()
-""" GPT-4o
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    logger.warning("OPENAI_API_KEY not set. API calls will fail if attempted.")
 
-client = AzureOpenAI(
-    api_version="2024-12-01-preview",
-    azure_endpoint="https://galton.openai.azure.com/",
-    api_key=OPENAI_API_KEY,
-)
-"""
+MODEL_BACKEND = "gpt5"
+client = None
 
-"""
-GOOGLE_PROJECT_ID = os.getenv("GOOGLE_PROJECT_ID")
-GOOGLE_LOCATION = os.getenv("GOOGLE_LOCATION", "global")
-GOOGLE_CREDS_PATH = os.getenv("GOOGLE_CREDS_PATH", "google_creds.json")
 
-credentials = service_account.Credentials.from_service_account_file(
-    GOOGLE_CREDS_PATH,
-    scopes=["https://www.googleapis.com/auth/cloud-platform"],
-)
+def init_client(backend: str):
+    global client, deployment_name
 
-client = genai.Client(
-    vertexai=True,
-    project=GOOGLE_PROJECT_ID,
-    location=GOOGLE_LOCATION,
-    credentials=credentials,
-)
-"""
+    if backend == "gpt5":
+        endpoint = "https://gpt-east-us-2-resource.openai.azure.com/openai/v1/"
+        deployment_name = "gpt-5.2-chat"
+        api_key = os.getenv("GPT_5_API_KEY")
+        client = OpenAI(base_url=endpoint, api_key=api_key)
 
-"""
-endpoint = "https://claude-east-us-2-resource.openai.azure.com/anthropic"
-deployment_name = "claude-sonnet-4-5"
-CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
+    elif backend == "gpt4o":
+        from openai import AzureOpenAI
 
-client = AnthropicFoundry(api_key=CLAUDE_API_KEY, base_url=endpoint)
-"""
+        endpoint = "https://galton.openai.azure.com/"
+        api_key = os.getenv("OPENAI_API_KEY")
+        deployment_name = "gpt-4o"
+        client = AzureOpenAI(
+            api_version="2024-12-01-preview",
+            azure_endpoint=endpoint,
+            api_key=api_key,
+        )
 
-endpoint = "https://gpt-east-us-2-resource.openai.azure.com/openai/v1/"
-deployment_name = "gpt-5.2-chat"
-GPT_5_API_KEY = os.getenv("GPT_5_API_KEY")
+    elif backend == "claude":
+        from anthropic import AnthropicFoundry
 
-client = OpenAI(base_url=endpoint, api_key=GPT_5_API_KEY)
+        endpoint = "https://claude-east-us-2-resource.openai.azure.com/anthropic"
+        deployment_name = "claude-sonnet-4-5"
+        api_key = os.getenv("CLAUDE_API_KEY")
+        client = AnthropicFoundry(api_key=api_key, base_url=endpoint)
+
+    elif backend == "gemini":
+        from google import genai
+        from google.oauth2 import service_account
+
+        GOOGLE_PROJECT_ID = os.getenv("GOOGLE_PROJECT_ID")
+        GOOGLE_LOCATION = os.getenv("GOOGLE_LOCATION", "global")
+        GOOGLE_CREDS_PATH = os.getenv("GOOGLE_CREDS_PATH", "google_creds.json")
+
+        credentials = service_account.Credentials.from_service_account_file(
+            GOOGLE_CREDS_PATH,
+            scopes=["https://www.googleapis.com/auth/cloud-platform"],
+        )
+
+        deployment_name = "gemini-3-flash-preview"
+        client = genai.Client(
+            vertexai=True,
+            project=GOOGLE_PROJECT_ID,
+            location=GOOGLE_LOCATION,
+            credentials=credentials,
+        )
+
+    else:
+        raise ValueError(f"Unknown backend: {backend}")
+
+    logger.info("Initialized backend: %s", backend)
+
 
 # -------------------------------
 # Templates and expansions
@@ -712,27 +729,49 @@ def evaluate_sections(md_text: str, expansion_key: str) -> List[Dict[str, Any]]:
 def call_model(
     system_prompt: str, user_prompt: str, max_retries: int = 3, backoff: float = 1.0
 ) -> str:
-    """Call the chat completion API and return the assistant text. Retries on transient errors.
-
-    Note: we use the same `client.chat.completions.create` shape as in your original code. If your SDK is
-    different in your environment, you may need to adapt this function.
-    """
     attempt = 0
     while True:
         attempt += 1
         try:
-            completion = client.chat.completions.create(
-                model=deployment_name,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=1,
-            )
+            if MODEL_BACKEND in {"gpt5", "gpt4o"}:
+                completion = client.chat.completions.create(
+                    model=deployment_name,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    temperature=1,
+                )
+                text = completion.choices[0].message.content
 
-            text = completion.choices[0].message.content
+            elif MODEL_BACKEND == "claude":
+                message = client.messages.create(
+                    model=deployment_name,
+                    system=system_prompt,
+                    messages=[{"role": "user", "content": user_prompt}],
+                    max_tokens=4096,
+                    temperature=0,
+                )
+                block = message.content[0]
+                text = (
+                    block.get("text")
+                    if isinstance(block, dict)
+                    else getattr(block, "text", "")
+                )
+
+            elif MODEL_BACKEND == "gemini":
+                full_prompt = f"{system_prompt}\n\n{user_prompt}"
+                response = client.models.generate_content(
+                    model=deployment_name,
+                    contents=full_prompt,
+                )
+                text = response.text
+
+            else:
+                raise RuntimeError("Invalid MODEL_BACKEND")
+
             if not text:
-                raise ValueError("Empty response from GPT")
+                raise ValueError("Empty response")
 
             return text
 
@@ -741,65 +780,7 @@ def call_model(
             if attempt >= max_retries:
                 raise
             sleep_time = backoff * (2 ** (attempt - 1))
-            logger.info("Retrying in %0.1f seconds...", sleep_time)
             time.sleep(sleep_time)
-            """GPT-4o
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                temperature=0,
-                top_p=1,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-            )
-
-            # response.choices[0].message.content is what your earlier code used
-            text = response.choices[0].message.content
-            """
-
-            """ GEMINI
-            full_prompt = f"""
-            {system_prompt}
-
-            {user_prompt}
-            """.strip()
-            response = client.models.generate_content(
-                model="gemini-3-flash-preview",
-                contents=full_prompt,
-                config=types.GenerateContentConfig(
-                    temperature=0,
-                    response_mime_type="application/json",
-                ),
-            )
-
-            # Gemini vraća listu kandidata; tekst je u .text
-            text = response.text
-
-            message = client.messages.create(
-                model=os.getenv("CLAUDE_DEPLOYMENT", "claude-sonnet-4-5"),
-                system=system_prompt,
-                messages=[
-                    {"role": "user", "content": user_prompt},
-                ],
-                max_tokens=4096,
-                temperature=0,
-            )
-
-            if isinstance(message.content, list) and len(message.content) > 0:
-                block = message.content[0]
-                # block može biti dict ili objekat sa .text
-                text = (
-                    block.get("text")
-                    if isinstance(block, dict)
-                    else getattr(block, "text", "")
-                )
-            else:
-                text = ""
-
-            if not text:
-                raise ValueError("Empty response from Claude")
-"""
 
 
 # -------------------------------
@@ -981,11 +962,23 @@ def parse_args() -> argparse.Namespace:
         default="full",
         help="Whether to evaluate the whole text in one prompt ('full') or evaluate global + each numbered chapter separately ('sections')",
     )
+    p.add_argument(
+        "--model-backend",
+        choices=["gpt5", "gpt4o", "claude", "gemini"],
+        default="gpt5",
+        help="Which LLM backend to use",
+    )
     return p.parse_args()
 
 
 def main():
     args = parse_args()
+
+    global MODEL_BACKEND
+    MODEL_BACKEND = args.model
+
+    init_client(MODEL_BACKEND)
+
     expansion = args.expansion
     if expansion not in EXPANSIONS:
         logger.warning("Unknown expansion '%s' — defaulting to 'none'", expansion)
