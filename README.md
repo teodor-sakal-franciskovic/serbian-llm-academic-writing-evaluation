@@ -15,3 +15,32 @@ This repository is organized as follows:
   Contains prompts and rubrics used in the experiments, translated from Serbian to English. Also, contains an anonymised paper example written in Serbian language.
 
 This structure is designed to support transparency, reproducibility, and ease of navigation for the research workflow.
+
+# 📊 Dataset and Annotation Procedure
+
+This section provides additional context on the dataset construction, collection process, and annotation methodology used in this research.
+
+## Data Collection
+
+The dataset was collected over two academic years and consists of student-written papers in the domains of Software Engineering and Artificial Intelligence.
+
+The assignments were designed to evaluate both writing quality and content accuracy. Students were required to clearly express ideas, maintain an appropriate academic tone, and construct coherent, well-structured arguments while engaging precisely with technical concepts.
+
+## Annotation Process
+
+The annotation procedure followed a two-stage, reliability-aware design:
+
+1. **Initial Reliability Assessment**  
+   A subset of the dataset was independently annotated by multiple annotators to establish inter-rater reliability.
+
+2. **Agreement Criteria**  
+   Consistent with established guidelines \cite{mchugh2012interrater}, the following thresholds were used:
+   - Coefficient-based agreement: ≥ 0.60  
+   - Adjacent agreement: ≥ 80%
+
+   These thresholds were considered sufficient to proceed to the main annotation phase \cite{krippendorff2011computing}.
+
+3. **Full Dataset Annotation**  
+   After achieving acceptable agreement, the remaining dataset was annotated by a single annotator.
+
+This approach—combining double annotation for reliability estimation with single-annotator scaling—is widely used in educational research to balance annotation quality with practical feasibility, and has been applied in prior work on writing assessment and constructed-response scoring \cite{mccaffrey2022best}.
