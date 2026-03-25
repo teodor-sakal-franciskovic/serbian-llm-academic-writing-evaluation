@@ -15,7 +15,6 @@ This repository is organized as follows:
   Contains prompts and rubrics used in the experiments, translated from Serbian to English. Also, contains an anonymised paper example written in Serbian language.
 
 This structure is designed to support transparency, reproducibility, and ease of navigation for the research workflow.
-
 # 📊 Dataset and Annotation Procedure
 
 This section provides additional context on the dataset construction, collection process, and annotation methodology used in this research.
@@ -34,11 +33,26 @@ The annotation procedure followed a two-stage, reliability-aware design:
    A subset of the dataset was independently annotated by multiple annotators to establish inter-rater reliability.
 
 2. **Agreement Criteria**  
-   Consistent with established guidelines \cite{mchugh2012interrater}, the following thresholds were used:
+   Consistent with established guidelines [1], the following thresholds were used:
    - Coefficient-based agreement: ≥ 0.60  
    - Adjacent agreement: ≥ 80%
 
-   These thresholds were considered sufficient to proceed to the main annotation phase \cite{krippendorff2011computing}.
+   These thresholds were considered sufficient to proceed to the main annotation phase [2].
+
+3. **Full Dataset Annotation**  
+   After achieving acceptable agreement, the remaining dataset was annotated by a single annotator.
+
+This approach—combining double annotation for reliability estimation with single-annotator scaling—is widely used in educational research to balance annotation quality with practical feasibility, and has been applied in prior work on writing assessment and constructed-response scoring [3].
+
+---
+
+## 📚 References
+
+[1] McHugh, M. L. (2012). *Interrater reliability: the kappa statistic*. Biochemia Medica, 22(3), 276–282.  
+
+[2] Krippendorff, K. (2011). *Computing Krippendorff’s alpha-reliability*.  
+
+[3] McCaffrey, D. F., et al. (2022). *Best practices for scoring constructed responses in education research*.  
 
 3. **Full Dataset Annotation**  
    After achieving acceptable agreement, the remaining dataset was annotated by a single annotator.
