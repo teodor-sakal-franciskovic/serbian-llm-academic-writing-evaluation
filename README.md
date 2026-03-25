@@ -54,7 +54,4 @@ This approach—combining double annotation for reliability estimation with sing
 
 [3] McCaffrey, D. F., et al. (2022). *Best practices for scoring constructed responses in education research*.  
 
-3. **Full Dataset Annotation**  
-   After achieving acceptable agreement, the remaining dataset was annotated by a single annotator.
-
 This approach—combining double annotation for reliability estimation with single-annotator scaling—is widely used in educational research to balance annotation quality with practical feasibility, and has been applied in prior work on writing assessment and constructed-response scoring \cite{mccaffrey2022best}.
