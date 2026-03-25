@@ -53,5 +53,4 @@ This approach—combining double annotation for reliability estimation with sing
 [2] Krippendorff, K. (2011). *Computing Krippendorff’s alpha-reliability*.  
 
 [3] McCaffrey, D. F., et al. (2022). *Best practices for scoring constructed responses in education research*.  
-
-This approach—combining double annotation for reliability estimation with single-annotator scaling—is widely used in educational research to balance annotation quality with practical feasibility, and has been applied in prior work on writing assessment and constructed-response scoring \cite{mccaffrey2022best}.
+quality with practical feasibility, and has been applied in prior work on writing assessment and constructed-response scoring \cite{mccaffrey2022best}.
